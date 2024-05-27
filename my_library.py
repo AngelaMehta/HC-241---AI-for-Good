@@ -1,17 +1,19 @@
 def test_load():
   return 'loaded'
 
+
 def compute_probs(neg,pos):
   p0 = neg/(neg+pos)
   p1 = pos/(neg+pos)
   return [p0,p1]
 
+
 def cond_prob(table, evidence, evidence_value, target, target_value):
   t_subset = up_table_subset(table, target, 'equals', target_value)
   e_list = up_get_column(t_subset, evidence)
   p_b_a = sum([1 if v==evidence_value else 0 for v in e_list])/len(e_list)
-  
   return p_b_a + 0.01
+
 
 def cond_probs_product(table, evidence_row, target, target_value):
   #your function body below
@@ -22,10 +24,12 @@ def cond_probs_product(table, evidence_row, target, target_value):
   partial_numerator = up_product(cond_prob_list)
   return partial_numerator
 
+
 def prior_prob(table, target, target_value):
   t_list = up_get_column(table, target)
   p_a = sum([1 if v==target_value else 0 for v in t_list])/len(t_list)
   return p_a
+
 
 def naive_bayes(table, evidence_row, target):
   #compute P(Flu=0|...) by collecting cond_probs in a list, take the product of the list, finally multiply by P(Flu=0)
@@ -36,11 +40,36 @@ def naive_bayes(table, evidence_row, target):
   target_value = 1
   num_1 = cond_probs_product(table, evidence_row, target, target_value) * prior_prob(table, target, target_value)
 
-
-
   #Use compute_probs to get 2 probabilities
   neg, pos = compute_probs(num_0, num_1)
 
   #return your 2 results in a list
-
   return [neg, pos]
+
+
+def metrics(zipped_list):
+  #asserts here
+  assert isinstance(zipped_list, list), f"zipped_list is not a list"
+  assert all(isinstance(a_list, list) for a_list in zipped_list), f"not a list of lists"
+  assert all(len(a_list) == 2 for a_list in zipped_list), f"not a list of pairs"
+  assert all(isinstance(item, int) and item >= 0 for a_list in zipped_list for item in a_list), f'item in pair in zipped_list is not an integer, or it is not >= 0 '
+  #body of function below
+  predictions, labels = zip(*zipped_list)
+  all_cases = len(predictions)
+
+  #first compute the sum of all 4 cases. See code above
+  tp = sum([p == 1 and l == 1 for p, l in zipped_list])
+  fn = sum([p == 0 and l == 1 for p, l in zipped_list])
+  fp = sum([p == 1 and l == 0 for p, l in zipped_list])
+  tn = sum([p == 0 and l == 0 for p, l in zipped_list])
+
+  #now can compute precicision, recall, f1, accuracy. Watch for divide by 0.
+  precision = tp / (tp + fp) if tp + fp != 0 else 0
+  recall = tp / (tp + fn) if tp + fn != 0 else 0
+  f1 = 2 * precision * recall /  (precision + recall) if precision + recall != 0 else 0
+  accuracy = (tp + tn) / all_cases
+
+  #now build dictionary with the 4 measures
+  dict_metrics = {'Precision': precision, 'Recall': recall, 'F1': f1, 'Accuracy': accuracy}
+  #finally, return the dictionary
+  return dict_metrics
