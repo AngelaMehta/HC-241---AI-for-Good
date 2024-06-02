@@ -49,7 +49,11 @@ def metrics(zipped_list):
   assert isinstance(zipped_list, list), f"zipped_list is not a list"
   assert all(isinstance(a_list, list) for a_list in zipped_list), f"not a list of lists"
   assert all(len(a_list) == 2 for a_list in zipped_list), f"not a list of pairs"
-  assert all(isinstance(item, int) and item >= 0 for a_list in zipped_list for item in a_list), f'item in pair in zipped_list is not an integer, or it is not >= 0 '
+  for a,b in zipped_list:
+   assert isinstance(a,(int,float)) and isinstance(b,(int,float)), f'zipped_list contains a non-int or non-float pair: {[a,b]}'
+  for a,b in zipped_list:
+   assert float(a) in [0.0,1.0] and float(b) in [0.0,1.0], f'zipped_list contains a non-binary pair: {[a,b]}'
+  # assert all(isinstance(item, int) and item >= 0 for a_list in zipped_list for item in a_list), f'item in pair in zipped_list is not an integer, or it is not >= 0 '
   #body of function below
   predictions, labels = zip(*zipped_list)
   all_cases = len(predictions)
