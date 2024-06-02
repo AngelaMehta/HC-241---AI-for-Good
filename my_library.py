@@ -73,3 +73,25 @@ def metrics(zipped_list):
   dict_metrics = {'Precision': precision, 'Recall': recall, 'F1': f1, 'Accuracy': accuracy}
   #finally, return the dictionary
   return dict_metrics
+
+def try_archs(full_table, target, architectures, thresholds):
+  #target is target column name
+  #split full_table
+  train_table, test_table = up_train_test_split(full_table, target, .4)
+  #now loop through architectures
+  for arch in architectures:
+    all_results = up_neural_net(train_table, test_table, arch, target)
+    #loop through thresholds
+    all_mets = []
+    #loop through thresholds
+    for t in thresholds:
+      all_predictions = [1 if pos>=t else 0 for neg,pos in all_results]
+      pred_act_list = up_zip_lists(all_predictions, up_get_column(test_table, target))
+      mets = metrics(pred_act_list)
+      mets['Threshold'] = t
+      all_mets = all_mets + [mets]
+
+    print(f'Architecture: {arch}')
+    print(up_metrics_table(all_mets))
+
+  return None  #main use is to print out threshold tables, not return anything useful.
